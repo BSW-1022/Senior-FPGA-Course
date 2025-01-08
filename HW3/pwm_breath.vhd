@@ -32,18 +32,20 @@ signal upbnd1: integer range 0 to 255;
 signal upbnd2: integer range 0 to 255;
 signal count1: integer range 0 to 255;
 signal count2: integer range 0 to 255;
+signal div     : std_logic_vector(60 downto 0);
+signal fclk  : std_logic;
 begin
---©I§lÀW²v½Õ¾ã breath frequency adaption, BFA
+--å‘¼å¸é »ç‡èª¿æ•´ breath frequency adaption, BFA
 --input: 
-    --sw_dn: ©I§l«æ«P(pwm¶g´Á¼ÆÅÜ¤p)¡A©I§lÀW²v©¹¤W½Õ¤@­Ó¨è«×, ¤@­Ó¨è«×¬°°Ñ¼Æ (16)
-    --sw_up: ©I§l½w©M(pwm¶g´Á¼ÆÅÜ¤j)¡A©I§lÀW²v©¹¤U½Õ¤@­Ó¨è«×
+    --sw_dn: å‘¼å¸æ€¥ä¿ƒ(pwmé€±æœŸæ•¸è®Šå°)ï¼Œå‘¼å¸é »ç‡å¾€ä¸Šèª¿ä¸€å€‹åˆ»åº¦, ä¸€å€‹åˆ»åº¦ç‚ºåƒæ•¸ (16)
+    --sw_up: å‘¼å¸ç·©å’Œ(pwmé€±æœŸæ•¸è®Šå¤§)ï¼Œå‘¼å¸é »ç‡å¾€ä¸‹èª¿ä¸€å€‹åˆ»åº¦
 --output: 
-    --n_cycle_PWM: pwm´`Àôn­Ó¶g´Á¤§«á¡Aµ¹ "½Õ¸`" ¤l¨t²Î½Õ¾ãupbnd1 & 2 (+1 or -1)
+    --n_cycle_PWM: pwmå¾ªç’°nå€‹é€±æœŸä¹‹å¾Œï¼Œçµ¦ "èª¿ç¯€" å­ç³»çµ±èª¿æ•´upbnd1 & 2 (+1 or -1)
 pwm <= pwm_state;
 sw <= i_sw_up & i_sw_dn;
 
 
-BFA:process(i_clk, i_rst, i_sw_up, i_sw_dn)
+BFA:process(fclk, i_rst, i_sw_up, i_sw_dn)
 begin
     if i_rst = '0' then
         n_cycle_PWM <= default_n; 
@@ -51,13 +53,13 @@ begin
         case sw is
             when "00" => 
                 null;
-            when "01" => --©I§l«æ«P(pwm¶g´Á¼ÆÅÜ¤p)
+            when "01" => --å‘¼å¸æ€¥ä¿ƒ(pwmé€±æœŸæ•¸è®Šå°)
                 if n_cycle_PWM > n_MIN_cycle then
                     n_cycle_PWM <= n_cycle_PWM - det_n; -- tune down det_n
                 else
                     null;
                 end if; 
-            when "10" => --©I§l´î½w(pwm¶g´Á¼ÆÅÜ¤j)
+            when "10" => --å‘¼å¸æ¸›ç·©(pwmé€±æœŸæ•¸è®Šå¤§)
                 if n_cycle_PWM < n_MAX_cycle then
                     n_cycle_PWM <= n_cycle_PWM + det_n; -- tune up det_n
                 else
@@ -70,26 +72,26 @@ begin
         end case;
     end if;
 end process;
---½Õ¸`Adapt: ­p¼Æ¾¹ªº¤W­­­È½Õ°ª/§C ==> PWM High/Low ¤ñ¨Ò½Õ°ª(½Õ«G)©ÎªÌ½Õ§C(ÅÜ·t)
+--èª¿ç¯€Adapt: è¨ˆæ•¸å™¨çš„ä¸Šé™å€¼èª¿é«˜/ä½ ==> PWM High/Low æ¯”ä¾‹èª¿é«˜(èª¿äº®)æˆ–è€…èª¿ä½(è®Šæš—)
 --input: 
-    --n_cycle_PWM: pwm´`Àôn­Ó¶g´Á¤§«á¡Aµ¹ "½Õ¸`" ¤l¨t²Î½Õ¾ãupbnd1 & 2 (+1 or -1)
+    --n_cycle_PWM: pwmå¾ªç’°nå€‹é€±æœŸä¹‹å¾Œï¼Œçµ¦ "èª¿ç¯€" å­ç³»çµ±èª¿æ•´upbnd1 & 2 (+1 or -1)
     --upbnd1: 
     --upbnd2:
     --pwm(state):
 --output:
-    --brighter_darker = '1' : counter1­p¼Æ¤W­­½Õ"°ª"1­Ó¨è«× "¦P®É"  counter2¤W­­½Õ"§C"¤@­Ó¨è«× ==> Brighter 
-    --brighter_darker = '0' : counter1­p¼Æ¤W­­½Õ"§C"1­Ó¨è«× "¦P®É"  counter2¤W­­½Õ"°ª"¤@­Ó¨è«× ==> Darker 
+    --brighter_darker = '1' : counter1è¨ˆæ•¸ä¸Šé™èª¿"é«˜"1å€‹åˆ»åº¦ "åŒæ™‚"  counter2ä¸Šé™èª¿"ä½"ä¸€å€‹åˆ»åº¦ ==> Brighter 
+    --brighter_darker = '0' : counter1è¨ˆæ•¸ä¸Šé™èª¿"ä½"1å€‹åˆ»åº¦ "åŒæ™‚"  counter2ä¸Šé™èª¿"é«˜"ä¸€å€‹åˆ»åº¦ ==> Darker 
 Adapt_brighter_or_darker:process(i_clk, i_rst, upbnd1, upbnd2)
 begin
     if i_rst = '0' then
         brighter_darker <= '1'; 
     elsif i_clk'event and i_clk = '1' then
         if brighter_darker = '0' then
-            if upbnd1=0 then -- counter2=MAX_PWM_count³Ì·t®É
+            if upbnd1=0 then -- counter2=MAX_PWM_countæœ€æš—æ™‚
                 brighter_darker <= '1';
             end if;
         else --brighter_darker = '1'
-            if upbnd2=0 then -- counter1=MAX_PWM_count³Ì«G®É
+            if upbnd2=0 then -- counter1=MAX_PWM_countæœ€äº®æ™‚
                 brighter_darker <= '0';
             end if;        
         end if;
@@ -112,8 +114,8 @@ begin
                 pwm_count <= pwm_count + 1;
                 n_cycle_PWM_complete <= '0'; -- not yet
             else
-                n_cycle_PWM_complete <= '1'; -- §¹¦¨ PWM ¶g´Á
-                pwm_count <= 0; -- ¶i¤J¤U¤@­Ó PWM ¶g´Á
+                n_cycle_PWM_complete <= '1'; -- å®Œæˆ PWM é€±æœŸ
+                pwm_count <= 0; -- é€²å…¥ä¸‹ä¸€å€‹ PWM é€±æœŸ
             end if;
         else
             n_cycle_PWM_complete <= '0'; -- null;
@@ -122,7 +124,7 @@ begin
 end process;
 --inputs:
     -- brighter_darker: 
-    -- n_cycle_PWM_complete: §¹¦¨n­Ócycle PWM¶g´Á
+    -- n_cycle_PWM_complete: å®Œæˆnå€‹cycle PWMé€±æœŸ
 --outputs:
     -- upbnd1, upbnd2        
 upperbounds:process(i_clk, i_rst, brighter_darker, n_cycle_PWM_complete)
@@ -197,5 +199,14 @@ begin
         end if;   
     end if;
 end process;
+div_clk : process(i_clk, i_rst)
+begin
+    if i_rst = '0' then
+        div <= (others => '0');
+    elsif rising_edge(i_clk) then
+        div <= div + 1;
+    end if;
+end process;
+fclk <= div(24);
 end Behavioral;
 
