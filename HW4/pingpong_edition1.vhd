@@ -35,7 +35,7 @@ begin
             clk_div_cnt <= clk_div_cnt + 1;
         end if;
     end process div_clk;
-	to_shift_clk <= clk_div_cnt(5);
+	to_shift_clk <= clk_div_cnt(23);
 	
 	FSM_state_process: process(clock, reset)
     begin
