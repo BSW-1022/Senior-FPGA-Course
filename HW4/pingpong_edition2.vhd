@@ -1,4 +1,3 @@
---PingPong Edition2 is random velcoity
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.std_logic_unsigned.ALL;
@@ -29,7 +28,7 @@ architecture Behavioral of pingpong is
 	--以下生成亂數用的參數
     constant crcPoly : std_logic_vector(7 downto 0) := "00000111"; -- 定義 CRC-8 生成多項式 (x^8 + x^2 + x + 1)，16進制:0x07
     signal crc_reg   : std_logic_vector(7 downto 0) := "11111111"; -- 自訂的初始種子 
-    signal input_bit : std_logic := '1'; -- 輸入位元，每一次左移進來 xor產生亂數用
+    signal input_bit : std_logic := '1'; -- 輸入位元，用於左移進crc_reg 
 	signal cntForCIB : integer := 0; --cntForChangingInputBit，改變輸入位元的參考 每一個輸入位元用 10次就換反向一次 增加亂數效果
 	signal clock_count :std_logic_vector(1 downto 0):="00"; --紀錄指定給位移的亂數時脈用了幾次，每位移兩次切換一個頻率
 	signal cntForGenRand : integer := 0;
@@ -267,7 +266,7 @@ begin
 		end if;
 	end process inputBitAdjust;
 	
-	-- record Clock To Input_bit Shift In CRCreg And Generate Rand Num
+	-- record Clock for Input_bit Shift in CRCreg And Generate Rand Num
 	cntForGenRandProcess: process(clock, reset)
 	begin
 		if reset = '1' then
@@ -294,24 +293,24 @@ begin
         end if;
     end process CRC;
     
-	--把crc的值調整成整數位移clock去索引頻率
+	--把crc的值調整成整數給位移clock去索引頻率
 	RandNumAdjust: process(to_shift_clk, reset)
     begin
         if reset = '1' then
-            randNum <= 8; -- 重置 CRC 寄存器
+            randNum <= 24; -- 重置 CRC 寄存器
         elsif rising_edge(to_shift_clk) then
             case state is 
 				when init | zero_and_zero | rwin | lwin =>
-					randNum <= 8;
+					randNum <= 24;
 				when r_shift | l_shift =>
 					if clock_count = "10" then
 						-- 將 crc運算完的值調到 20-25
-						randNum <= conv_integer(crc_reg) mod 5 + 5 ;
+						randNum <= conv_integer(crc_reg) mod 6 + 22 ;
 					else
 						null;
 					end if;
 				when others =>
-					randNum <= 8;
+					randNum <= 24;
 			end case;
         end if;
     end process RandNumAdjust;
