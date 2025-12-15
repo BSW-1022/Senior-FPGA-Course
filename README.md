@@ -1,9 +1,14 @@
 # HW Description
 HW1:two counter by switching count
+
 HW2:The PWM simulation of DC motor
+
 HW3:Breathe LED by using PWM
+
 HW4:Constant frequency pingpong and random frequency pingpong
+
 HW5:Showing three different color's square at different area by using VGA
+
 HW5-2:Making a pingpong game by VGA
 # Edtion Control
 ![image](https://github.com/user-attachments/assets/4db0fdb7-8a78-492e-8ae5-4287fe1c5752)
