@@ -1,4 +1,4 @@
-# HW Description
+# Description
 HW1:two counter by switching count
 
 HW2:The PWM simulation of DC motor
